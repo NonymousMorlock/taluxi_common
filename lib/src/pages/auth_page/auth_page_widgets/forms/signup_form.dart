@@ -2,15 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/widgets/core_widgts.dart';
+import 'package:taluxi_common/src/core/utils/form_fields_validators.dart';
+import 'package:taluxi_common/src/core/widgets/core_widgts.dart';
+import 'package:taluxi_common/src/pages/auth_page/auth_page_widgets/forms/commons_form_widgets.dart';
 import 'package:user_manager/user_manager.dart';
 
-import '../../../../core/utils/form_fields_validators.dart';
-import 'commons_form_widgets.dart';
-
 class SignUpForm extends StatefulWidget {
+  const SignUpForm({required this.onLoginRequest, super.key});
   final void Function() onLoginRequest;
-  SignUpForm({@required this.onLoginRequest});
 
   @override
   _SignUpFormState createState() => _SignUpFormState();
@@ -18,31 +17,34 @@ class SignUpForm extends StatefulWidget {
 
 class _SignUpFormState extends State<SignUpForm> {
   final _formKey = GlobalKey<FormState>();
-  var email = '';
-  var password = '';
-  var firstName = '';
-  var lastName = '';
+  String email = '';
+  String password = '';
+  String firstName = '';
+  String lastName = '';
   bool waitDialogIsShown = false;
-  AuthenticationProvider authProvider;
-  Timer facebookSignInSuggestionTimer;
+  late AuthenticationProvider authProvider;
+  Timer? facebookSignInSuggestionTimer;
 
   @override
   void initState() {
     super.initState();
-    facebookSignInSuggestionTimer =
-        Timer(Duration(milliseconds: 1100), _showFacebookSignInSuggestion);
+    authProvider = context.read<AuthenticationProvider>();
+    facebookSignInSuggestionTimer = Timer(
+      const Duration(milliseconds: 1100),
+      _showFacebookSignInSuggestion,
+    );
   }
 
   @override
   void dispose() {
-    facebookSignInSuggestionTimer.cancel();
+    facebookSignInSuggestionTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
-    authProvider = Provider.of<AuthenticationProvider>(context, listen: true);
+    authProvider = Provider.of<AuthenticationProvider>(context);
     if (authProvider.authState == AuthState.registering) {
       Future.delayed(Duration.zero, () async {
         waitDialogIsShown = true;
@@ -52,27 +54,28 @@ class _SignUpFormState extends State<SignUpForm> {
 
     return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           SizedBox(height: height * .14),
           Container(
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30), color: Colors.white),
+              borderRadius: BorderRadius.circular(30),
+              color: Colors.white,
+            ),
             padding: const EdgeInsets.all(4),
             child: const Text(
-              "Inscription ",
-              textScaleFactor: 1.7,
+              'Inscription ',
+              textScaler: TextScaler.linear(1.7),
             ),
           ),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           _form(),
-          SizedBox(
+          const SizedBox(
             height: 15,
           ),
           FormValidatorButton(
             onClick: () async {
-              if (_formKey.currentState.validate())
+              if (_formKey.currentState!.validate()) {
                 await authProvider
                     .registerUser(
                       email: email,
@@ -80,9 +83,12 @@ class _SignUpFormState extends State<SignUpForm> {
                       firstName: firstName,
                       lastName: lastName,
                     )
-                    .then((_) => Navigator.of(context)
-                        .popUntil((route) => route.isFirst))
+                    .then(
+                      (_) => Navigator.of(context)
+                          .popUntil((route) => route.isFirst),
+                    )
                     .catchError(_onSignUpError);
+              }
             },
           ),
           _formLoginLink(),
@@ -91,7 +97,7 @@ class _SignUpFormState extends State<SignUpForm> {
     );
   }
 
-  void _onSignUpError(dynamic error) async {
+  Future<void> _onSignUpError(dynamic error) async {
     if (waitDialogIsShown) {
       Navigator.of(context).pop();
       waitDialogIsShown = false;
@@ -101,15 +107,15 @@ class _SignUpFormState extends State<SignUpForm> {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: Text('Echec de la connexion'),
+          title: const Text('Echec de la connexion'),
           content: Text(error.message),
           actions: [
             Center(
-              child: RaisedButton(
+              child: ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Fermer'),
+                child: const Text('Fermer'),
               ),
             ),
           ],
@@ -125,26 +131,26 @@ class _SignUpFormState extends State<SignUpForm> {
         children: <Widget>[
           CustomTextField(
             onChange: (value) => lastName = value,
-            prefixIcon: Icon(Icons.person),
+            prefixIcon: const Icon(Icons.person),
             maxLength: 30,
-            title: "Nom",
+            title: 'Nom',
             validator: namesValidator,
           ),
           CustomTextField(
             onChange: (value) => firstName = value,
-            prefixIcon: Icon(Icons.person_outline),
+            prefixIcon: const Icon(Icons.person_outline),
             maxLength: 30,
-            title: "Prénom",
+            title: 'Prénom',
             validator: namesValidator,
           ),
           CustomTextField(
             onChange: (value) => email = value,
-            title: "Email",
-            prefixIcon: Icon(Icons.email_rounded),
+            title: 'Email',
+            prefixIcon: const Icon(Icons.email_rounded),
             fieldType: TextInputType.emailAddress,
             validator: emailFieldValidator,
           ),
-          SizedBox(
+          const SizedBox(
             height: 16,
           ),
           PasswordField(
@@ -161,28 +167,31 @@ class _SignUpFormState extends State<SignUpForm> {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: Text("Recommendation"),
-          content: Text(
-              "Cher utilisateur, si vous avez un compte Facebook il n'est pas nécessaire de créer un compte Taluxi, vous pouvez vous connecter à Taluxi à l'aide de votre compte Facebook. C'est plus facile et plus rapide,\nMerci de votre compréhension."),
+          title: const Text('Recommendation'),
+          content: const Text(
+            "Cher utilisateur, si vous avez un compte Facebook il n'est pas nécessaire de créer un compte Taluxi, vous pouvez vous connecter à Taluxi à l'aide de votre compte Facebook. C'est plus facile et plus rapide,\nMerci de votre compréhension.",
+          ),
           actions: [
             Center(
-              child: RaisedButton(
+              child: ElevatedButton(
                 onPressed: () async {
                   await authProvider
                       .signInWithFacebook()
-                      .then((_) => Navigator.of(context)
-                          .popUntil((route) => route.isFirst))
+                      .then(
+                        (_) => Navigator.of(context)
+                            .popUntil((route) => route.isFirst),
+                      )
                       .catchError(_onSignUpError);
                 },
-                child: Text("Me connecter à l'aide de Facebook"),
+                child: const Text("Me connecter à l'aide de Facebook"),
               ),
             ),
             Center(
-              child: RaisedButton(
-                child: Text("Créer un nouveau compte"),
+              child: ElevatedButton(
+                child: const Text('Créer un nouveau compte'),
                 onPressed: () => Navigator.pop(context),
               ),
-            )
+            ),
           ],
         );
       },
@@ -191,12 +200,12 @@ class _SignUpFormState extends State<SignUpForm> {
 
   Widget _formLoginLink() {
     return Container(
-      margin: EdgeInsets.only(top: 35),
-      padding: EdgeInsets.symmetric(vertical: 7),
+      margin: const EdgeInsets.only(top: 35),
+      padding: const EdgeInsets.symmetric(vertical: 7),
       alignment: Alignment.bottomCenter,
       child: InkWell(
         onTap: widget.onLoginRequest,
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             SizedBox(
@@ -209,9 +218,10 @@ class _SignUpFormState extends State<SignUpForm> {
             Text(
               'Cliquez ici pour vous connecter',
               style: TextStyle(
-                  color: Color(0xfff79c4f),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
+                color: Color(0xfff79c4f),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

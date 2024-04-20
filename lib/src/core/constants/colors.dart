@@ -7,7 +7,8 @@ const mainLinearGradient =
     LinearGradient(colors: [mainLightColor, mainLightLessColor]);
 
 const secondaryLinearGradient = LinearGradient(
-    colors: [Color(0xFFFFBF5F), Color(0xFFF7A62E), Color(0xFFFF9437)]);
+  colors: [Color(0xFFFFBF5F), Color(0xFFF7A62E), Color(0xFFFF9437)],
+);
 
 // const drawerLinearGradiant = LinearGradient(
 //     begin:  Alignment.topCenter,

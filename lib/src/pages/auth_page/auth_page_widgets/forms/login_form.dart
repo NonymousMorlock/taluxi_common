@@ -1,46 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/utils/form_fields_validators.dart';
-import '../../../../core/widgets/core_widgts.dart';
+import 'package:taluxi_common/src/core/utils/form_fields_validators.dart';
+import 'package:taluxi_common/src/core/widgets/core_widgts.dart';
+import 'package:taluxi_common/src/pages/auth_page/auth_page_widgets/forms/commons_form_widgets.dart';
 import 'package:user_manager/user_manager.dart';
 
-import 'commons_form_widgets.dart';
-
 class LoginForm extends StatefulWidget {
+  const LoginForm({required this.onSignUpRequest, super.key});
   final void Function() onSignUpRequest;
-
-  LoginForm({@required this.onSignUpRequest});
 
   @override
   _LoginFormState createState() => _LoginFormState();
 }
 
 class _LoginFormState extends State<LoginForm> {
-  var password = '';
-  var email = '';
+  String password = '';
+  String email = '';
   final _formKey = GlobalKey<FormState>();
   bool waitDialogIsShown = false;
-  AuthenticationProvider authProvider;
+  late AuthenticationProvider authProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    authProvider = context.read<AuthenticationProvider>();
+    authProvider.addListener(() {
+      if (authProvider.authState == AuthState.authenticating) {
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          Future.delayed(Duration.zero, () {
+            print('Login form');
+            waitDialogIsShown = true;
+            showWaitDialog('Connexion en cours', context);
+          });
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    authProvider.removeListener(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
-    authProvider = Provider.of<AuthenticationProvider>(context, listen: true);
-    if (authProvider.authState == AuthState.authenticating) {
-      Future.delayed(Duration.zero, () {
-        print('Login form');
-        waitDialogIsShown = true;
-        showWaitDialog('Connexion en cours', context);
-      });
-    }
 
     return Container(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           SizedBox(height: height * .27),
-          Text(
-            "Connexion",
+          const Text(
+            'Connexion',
             textScaleFactor: 1.88,
           ),
           SizedBox(height: height * .09),
@@ -50,42 +64,49 @@ class _LoginFormState extends State<LoginForm> {
               children: [
                 CustomTextField(
                   onChange: (value) => email = value,
-                  title: "Email",
-                  prefixIcon: Icon(Icons.email_rounded),
+                  title: 'Email',
+                  prefixIcon: const Icon(Icons.email_rounded),
                   fieldType: TextInputType.emailAddress,
                   validator: emailFieldValidator,
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 16,
                 ),
                 PasswordField(
                   onChanged: (value) => password = value,
-                )
+                ),
               ],
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 25,
           ),
-          FormValidatorButton(onClick: () async {
-            if (_formKey.currentState.validate()) {
-              await authProvider
-                  .signInWithEmailAndPassword(email: email, password: password)
-                  .then((_) =>
-                      Navigator.of(context).popUntil((route) => route.isFirst))
-                  .catchError(_onSignInError);
-            }
-          }),
-          SizedBox(
+          FormValidatorButton(
+            onClick: () async {
+              if (_formKey.currentState!.validate()) {
+                await authProvider
+                    .signInWithEmailAndPassword(
+                        email: email, password: password)
+                    .then(
+                      (_) => Navigator.of(context)
+                          .popUntil((route) => route.isFirst),
+                    )
+                    .catchError(_onSignInError);
+              }
+            },
+          ),
+          const SizedBox(
             height: 5,
           ),
           Container(
-            margin: EdgeInsets.only(right: 7, top: 10),
+            margin: const EdgeInsets.only(right: 7, top: 10),
             alignment: Alignment.centerRight,
             child: InkWell(
               onTap: () {},
-              child: Text('Mot de passe oublié ?',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              child: const Text(
+                'Mot de passe oublié ?',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
             ),
           ),
           SizedBox(height: height * .055),
@@ -95,42 +116,44 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 
-  void _onSignInError(exception) async {
+  Future<void> _onSignInError(exception) async {
     if (waitDialogIsShown) {
       Navigator.of(context).pop();
       waitDialogIsShown = false;
     }
-    print(exception.toString());
+    print(exception);
     return await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: Text('Echec de la connexion'),
+          title: const Text('Echec de la connexion'),
           content: Text(exception.message),
           actions: [
             if (exception.exceptionType ==
                 AuthenticationExceptionType
                     .accountExistsWithDifferentCredential)
               Center(
-                child: RaisedButton(
+                child: ElevatedButton(
                   onPressed: () async {
                     await authProvider
                         .signInWithFacebook()
-                        .then((_) => Navigator.of(context)
-                            .popUntil((route) => route.isFirst))
+                        .then(
+                          (_) => Navigator.of(context)
+                              .popUntil((route) => route.isFirst),
+                        )
                         .catchError(_onSignInError);
                   },
-                  child: Text('Se connecter avec Facebook'),
+                  child: const Text('Se connecter avec Facebook'),
                 ),
               )
             else
               Center(
-                child: RaisedButton(
+                child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Fermer'),
+                  child: const Text('Fermer'),
                 ),
               ),
           ],
@@ -143,9 +166,9 @@ class _LoginFormState extends State<LoginForm> {
     return InkWell(
       onTap: widget.onSignUpRequest,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 7),
+        padding: const EdgeInsets.symmetric(vertical: 7),
         alignment: Alignment.bottomCenter,
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
@@ -155,9 +178,10 @@ class _LoginFormState extends State<LoginForm> {
             Text(
               'Cliquez ici pour le faire',
               style: TextStyle(
-                  color: Color(0xfff79c4f),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
+                color: Color(0xfff79c4f),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
