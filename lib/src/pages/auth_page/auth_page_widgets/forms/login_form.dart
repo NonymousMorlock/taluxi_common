@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
@@ -121,7 +122,8 @@ class _LoginFormState extends State<LoginForm> {
       Navigator.of(context).pop();
       waitDialogIsShown = false;
     }
-    print(exception);
+    if(exception is AuthenticationException) debugPrint(exception.message);
+    else debugPrint(exception.toString());
     return await showDialog(
       context: context,
       barrierDismissible: false,
