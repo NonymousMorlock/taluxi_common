@@ -15,10 +15,9 @@ dependencies:
   flutter_svg: ^2.0.10+1
   provider: ^6.1.2
   real_time_location:
-    path: ../real_time_location
-#    git:
-#      url: https://github.com/NonymousMorlock/taluxi_real_time_location.git
-#      ref: main
+    git:
+      url: https://github.com/NonymousMorlock/taluxi_real_time_location.git
+      ref: main
   user_manager:
     git:
       url: https://github.com/NonymousMorlock/taluxi_user_manager.git
