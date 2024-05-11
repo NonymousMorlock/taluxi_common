@@ -20,7 +20,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   void initState() {
     super.initState();
-    _user = context.read<AuthenticationProvider>().user!;
+    _user = AuthenticationProvider.instance.user!;
   }
 
   @override
