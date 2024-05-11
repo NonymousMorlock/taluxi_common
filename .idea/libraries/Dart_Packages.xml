@@ -474,7 +474,7 @@
         <entry key="real_time_location">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/git/taluxi_real_time_location-a63720c5271255fa5ef46e3234818c1a99f56a47//lib" />
+              <option value="$USER_HOME$/.pub-cache/git/taluxi_real_time_location-ac81600e461bd69eb6c9bfcc8a013b4e4a657729//lib" />
             </list>
           </value>
         </entry>
@@ -656,7 +656,7 @@
       </option>
     </properties>
     <CLASSES>
-      <root url="file://$USER_HOME$/.pub-cache/git/taluxi_real_time_location-a63720c5271255fa5ef46e3234818c1a99f56a47//lib" />
+      <root url="file://$USER_HOME$/.pub-cache/git/taluxi_real_time_location-ac81600e461bd69eb6c9bfcc8a013b4e4a657729//lib" />
       <root url="file://$USER_HOME$/.pub-cache/git/taluxi_user_manager-a132359a5af01401515ab8de8a31e037f8d579a5//lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/_flutterfire_internals-1.3.30/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/args-2.5.0/lib" />
